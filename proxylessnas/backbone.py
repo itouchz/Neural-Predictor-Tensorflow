@@ -16,6 +16,7 @@
 
 # Modified from tensorflow's MobilenetV2
 
+import tensorflow as tf
 from tensorflow.python.keras import backend
 from tensorflow.python.keras.applications import imagenet_utils
 from tensorflow.python.keras.engine import training
@@ -412,7 +413,9 @@ def SuperProxylessNAS(
     if include_top:
         x = layers.GlobalAveragePooling2D()(x)
         imagenet_utils.validate_activation(classifier_activation, weights)
-        x = layers.Dense(classes, activation=classifier_activation, name="predictions")(
+        x = layers.Dense(classes, activation=classifier_activation, 
+                         kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.01),
+                         name="predictions")(
             x
         )
 
@@ -505,6 +508,8 @@ def _inverted_res_block(inputs, stride, alpha, filters, block_id, opcode):
             use_bias=False,
             activation=None,
             name=prefix + "expand",
+            kernel_regularizer=tf.keras.regularizers.L2(l2=4e-5),
+            kernel_initializer=tf.keras.initializers.HeUniform()
         )(x)
         x = layers.BatchNormalization(
             axis=channel_axis, epsilon=1e-3, momentum=0.999, name=prefix + "expand_BN"
@@ -525,6 +530,8 @@ def _inverted_res_block(inputs, stride, alpha, filters, block_id, opcode):
         use_bias=False,
         padding="same" if stride == 1 else "valid",
         name=prefix + "depthwise",
+        depthwise_regularizer=tf.keras.regularizers.L2(l2=4e-5),
+        depthwise_initializer=tf.keras.initializers.HeUniform()
     )(x)
     x = layers.BatchNormalization(
         axis=channel_axis, epsilon=1e-3, momentum=0.999, name=prefix + "depthwise_BN"
@@ -540,6 +547,8 @@ def _inverted_res_block(inputs, stride, alpha, filters, block_id, opcode):
         use_bias=False,
         activation=None,
         name=prefix + "project",
+        kernel_regularizer=tf.keras.regularizers.L2(l2=4e-5),
+        kernel_initializer=tf.keras.initializers.HeUniform()
     )(x)
     x = layers.BatchNormalization(
         axis=channel_axis, epsilon=1e-3, momentum=0.999, name=prefix + "project_BN"
