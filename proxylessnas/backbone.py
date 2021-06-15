@@ -203,11 +203,10 @@ def SuperProxylessNAS(
         kernel_size=3,
         strides=(2, 2),
         padding="same",
-        use_bias=False,
         name="Conv1",
     )(img_input)
     x = layers.BatchNormalization(
-        axis=channel_axis, epsilon=1e-3, momentum=0.999, name="bn_Conv1"
+        axis=channel_axis, epsilon=1e-3, momentum=0.99, name="bn_Conv1"
     )(x)
     x = layers.ReLU(6.0, name="Conv1_relu")(x)
 
@@ -402,11 +401,11 @@ def SuperProxylessNAS(
     else:
         last_block_filters = 1280
 
-    x = layers.Conv2D(last_block_filters, kernel_size=1, use_bias=False, name="Conv_1")(
+    x = layers.Conv2D(last_block_filters, kernel_size=1, name="Conv_1")(
         x
     )
     x = layers.BatchNormalization(
-        axis=channel_axis, epsilon=1e-3, momentum=0.999, name="Conv_1_bn"
+        axis=channel_axis, epsilon=1e-3, momentum=0.99, name="Conv_1_bn"
     )(x)
     x = layers.ReLU(6.0, name="out_relu")(x)
 
@@ -505,14 +504,13 @@ def _inverted_res_block(inputs, stride, alpha, filters, block_id, opcode):
             expansion * in_channels,
             kernel_size=1,
             padding="same",
-            use_bias=False,
             activation=None,
             name=prefix + "expand",
             kernel_regularizer=tf.keras.regularizers.L2(l2=4e-5),
             kernel_initializer=tf.keras.initializers.HeUniform()
         )(x)
         x = layers.BatchNormalization(
-            axis=channel_axis, epsilon=1e-3, momentum=0.999, name=prefix + "expand_BN"
+            axis=channel_axis, epsilon=1e-3, momentum=0.99, name=prefix + "expand_BN"
         )(x)
         x = layers.ReLU(6.0, name=prefix + "expand_relu")(x)
     else:
@@ -527,14 +525,13 @@ def _inverted_res_block(inputs, stride, alpha, filters, block_id, opcode):
         kernel_size=kernel_size,
         strides=stride,
         activation=None,
-        use_bias=False,
         padding="same" if stride == 1 else "valid",
         name=prefix + "depthwise",
         depthwise_regularizer=tf.keras.regularizers.L2(l2=4e-5),
         depthwise_initializer=tf.keras.initializers.HeUniform()
     )(x)
     x = layers.BatchNormalization(
-        axis=channel_axis, epsilon=1e-3, momentum=0.999, name=prefix + "depthwise_BN"
+        axis=channel_axis, epsilon=1e-3, momentum=0.99, name=prefix + "depthwise_BN"
     )(x)
 
     x = layers.ReLU(6.0, name=prefix + "depthwise_relu")(x)
@@ -544,14 +541,13 @@ def _inverted_res_block(inputs, stride, alpha, filters, block_id, opcode):
         pointwise_filters,
         kernel_size=1,
         padding="same",
-        use_bias=False,
         activation=None,
         name=prefix + "project",
         kernel_regularizer=tf.keras.regularizers.L2(l2=4e-5),
         kernel_initializer=tf.keras.initializers.HeUniform()
     )(x)
     x = layers.BatchNormalization(
-        axis=channel_axis, epsilon=1e-3, momentum=0.999, name=prefix + "project_BN"
+        axis=channel_axis, epsilon=1e-3, momentum=0.99, name=prefix + "project_BN"
     )(x)
 
     if in_channels == pointwise_filters and stride == 1:

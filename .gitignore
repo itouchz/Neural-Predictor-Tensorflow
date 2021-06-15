@@ -1,3 +1,5 @@
+nasbench_only108.tfrecord
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
