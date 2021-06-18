@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import networkx as nx 
 
 from spektral.utils.convolution import gcn_filter
 
@@ -56,3 +57,54 @@ def preprocess_proxylessnas(models, normalize=True):
         AT.append(np.transpose(A[m]))
     AT = np.array(AT)
     return {'X': X, 'norm_A': gcn_filter(A) if normalize else np.array(A), 'norm_AT': gcn_filter(AT) if normalize else np.array(AT)}
+
+def preprocess_nasbench_nlp(models, stats, normalize=True):
+    ops = {
+        'activation_leaky_relu': 0,
+        'activation_sigm': 1,
+        'activation_tanh': 2,
+        'blend': 3,
+        'elementwise_prod': 4,
+        'elementwise_sum': 5,
+        'linear': 6
+    }
+    
+    X = []
+    A = []
+    AT = []
+    val_loss, test_loss, times = [], [], []
+    for model in models:
+        Xm = np.zeros([25, 7])
+        G = nx.DiGraph()
+        for n in model.keys():
+            if n not in G.nodes():
+                G.add_node(n)
+            for k in model[n]['input']:
+                if k not in G.nodes():
+                    G.add_node(k)
+                G.add_edge(n, k, label=model[n]['op'])
+                G.add_edge(k, n, label='rev_' + model[n]['op'])
+                
+        for i, k in enumerate(model.keys()):
+            Xm[i][ops[model[k]['op']]] = 1.
+            
+        adj = np.tril(nx.adjacency_matrix(G).todense())
+        adj_t = np.triu(nx.adjacency_matrix(G).todense())
+        
+        X.append(Xm)
+        A.append(np.pad(adj, pad_width=(0, 25 - adj.shape[0]), mode='constant', constant_values=0).astype(float))
+        AT.append(np.pad(np.transpose(adj), pad_width=(0, 25 - np.transpose(adj).shape[0]),  mode='constant', constant_values=0).astype(float))
+    
+    for stat in stats:
+        val_loss.append(stat['val_loss'])
+        test_loss.append(stat['test_loss'])
+        times.append(stat['wall_time'])
+        
+        
+    return {'X': np.array(X), 
+            'norm_A': gcn_filter(np.array(A)) if normalize else np.array(A), 
+            'norm_AT': gcn_filter(np.array(AT)) if normalize else np.array(AT), 
+            'val_loss': np.array(val_loss), 
+            'test_loss': np.array(test_loss), 
+            'times': np.array(times)
+           }

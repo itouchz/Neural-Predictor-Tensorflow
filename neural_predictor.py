@@ -4,7 +4,7 @@ from tensorflow.keras import Model, Input
 from tensorflow.keras.layers import Dense, Average, Dropout, Conv1D, MaxPool1D, GlobalAveragePooling1D, Flatten
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
-from tensorflow.keras.optimizers.schedules import CosineDecay
+from tensorflow.keras.experimental import CosineDecay
 
 from spektral.layers import GCNConv, GlobalAvgPool
 
@@ -94,7 +94,7 @@ def regressor(train_data, labels, N=172, D=0, n_gcn=3, n_hidden_fc=[128], init_l
 
     if mode == 'accuracy':
         y = Dense(1, activation=ss_sigmoid if is_shift else s_sigmoid, kernel_regularizer=l2(weight_decay))(fc_in)
-    elif mode == 'error':
+    elif mode == 'loss':
         y = Dense(1, activation='relu', kernel_regularizer=l2(weight_decay))(fc_in)
     
     model = Model(inputs=[V0, A, AT], outputs=y)
