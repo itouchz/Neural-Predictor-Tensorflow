@@ -69,18 +69,6 @@ def run_random_search(nasbench, max_time_budget=5e6):
 
 def proxylessnas_random(num_reps=1, latency_limit=(-1, -1)):
     choice = np.random.choice
-#     est = LatencyEstimator()
-# est_latency = 0
-# est_latency += est.predict('Conv', [224, 224, 3], [112, 112, 32])
-# est_latency += est.predict('Conv_1', [7, 7, 320], [7, 7, 1280])
-# est_latency += est.predict('Logits', [7, 7, 1280], [1000])
-
-# for i, op in enumerate(rep):
-#     if i == 0:
-#         est_latency += est.predict('expanded_conv', [], [], expand=1, kernel=arch[op]['kernel_size'], stride=, idskip=0)
-#     else:
-#         est_latency += est.predict('expanded_conv', [], [], expand=arch[op]['expansion'], kernel=arch[op]['kernel_size'], stride=, idskip=1 if op == 6 else 0)
-# est_latency
 
     def help_random():
         arch = [
